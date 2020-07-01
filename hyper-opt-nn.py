@@ -83,6 +83,15 @@ def train(dataset, net, train_frac, lr, batch_size, epochs):
     r, p  = pearsonr(predictions,ground_truths)
     return r,p
 
+def plot_(df):
+     plt.plot(df['train_frac'], df['R'])
+     plt.ylabel('r')
+     plt.xlabel('train frac')
+     plt.ylim(0,1)
+     plt.xlim(0,1)
+     plt.title('training sizes vs accuracy')
+     plt.grid()
+     plt.savefig('training.png')
 
 def main(args):
     cuda = args.cuda
@@ -97,12 +106,13 @@ def main(args):
     epochs = 5
     # loop thru train fracs
     rs,ps, fracs = [], [], []
-    for train_frac in np.linspace(0.1,0.9,10):
+    for train_frac in np.linspace(0.1,0.9,50):
         r,p = train(dataset,net, float(train_frac), lr, batch_size, epochs)
         rs.append(r), ps.append(p), fracs.append(train_frac)
 
     df = pd.DataFrame([fracs,rs,ps], index = ['train_frac','R','P']).T
     df.to_csv('scores.csv')
+    plot_(df)
     print(df)
 
 if __name__ == '__main__':
