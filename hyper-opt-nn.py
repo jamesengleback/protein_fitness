@@ -76,8 +76,8 @@ def train(dataset, net, train_frac, lr, batch_size, epochs):
         yh = net(x)
         predictions.append(yh)
         ground_truths.append(y)
-    predictions = torch.cat(predictions).detach().numpy()
-    ground_truths = torch.cat(ground_truths).detach().numpy()
+    predictions = torch.cat(predictions).detach().cpu().numpy()
+    ground_truths = torch.cat(ground_truths).detach().cpu().numpy()
 
     # score r
     r, p  = pearsonr(predictions,ground_truths)
