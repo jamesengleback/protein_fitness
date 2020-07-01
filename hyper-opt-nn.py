@@ -81,7 +81,7 @@ def train(dataset, net, train_frac, lr, batch_size, epochs):
 
     # score r
     r, p  = pearsonr(predictions,ground_truths)
-    return r,p
+    return train_frac,r,p
 
 
 def main(args):
@@ -97,11 +97,11 @@ def main(args):
     epochs = 5
     # loop thru train fracs
     rs,ps = [], []
-    for train_frac in np.linspace(0.1,0.9,3):
+    for train_frac in np.linspace(0.1,0.9,10):
         r,p = train(dataset,net, float(train_frac), lr, batch_size, epochs)
         rs.append(r), ps.append(p)
 
-    df = pd.DataFrame([rs,ps], index = ['R','P']).T
+    df = pd.DataFrame([train_frac,rs,ps], index = ['train_frac','R','P']).T
     df.to_csv('scores.csv')
     print(df)
 
