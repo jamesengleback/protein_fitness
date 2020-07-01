@@ -2,9 +2,10 @@ import torch
 import torch.nn as nn
 from torch.utils.data import Dataset, DataLoader, random_split
 import pandas as pd
-from tqdm import tqdm
-from scipy.stats import pearsonr
 import numpy as np
+from scipy.stats import pearsonr
+from tqdm import tqdm
+import argparse
 
 class ProtDataset(Dataset):
     def __init__(self,path, cuda=False):
@@ -58,6 +59,7 @@ def train(dataset, net, train_frac, lr, batch_size, epochs):
     # train
     loss_fn = nn.MSELoss()
     opt = torch.optim.Adam(net.parameters(),lr=0.1)
+    print('Train')
     for epoch in range(epochs):
         for x,y in tqdm(train_loader):
             yh = net(x)
@@ -82,9 +84,9 @@ def train(dataset, net, train_frac, lr, batch_size, epochs):
     return r,p
 
 
-def main():
-    cuda = False
-    dataset = ProtDataset('small-protein-fitness.csv', cuda)
+def main(args):
+    cuda = args.cuda
+    dataset = ProtDataset(args.data, cuda)
     if cuda:
         net = Net().cuda()
     else:
@@ -99,7 +101,13 @@ def main():
         r,p = train(dataset,net, float(train_frac), lr, batch_size, epochs)
         rs.append(r), ps.append(p)
 
-    df = pd.DataFrame([rs,ps])
+    df = pd.DataFrame([rs,ps], index = ['R','P']).T
+    df.to_csv('scores.csv')
     print(df)
+
 if __name__ == '__main__':
-    main()
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-d','--data')
+    parser.add_argument('-c','--cuda', action = 'store_true')
+    args = parser.parse_args()
+    main(args)
