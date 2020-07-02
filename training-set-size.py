@@ -8,8 +8,6 @@ from scipy.stats import pearsonr
 from tqdm import tqdm
 import argparse
 
-from ax.service.managed_loop import optimize
-
 class ProtDataset(Dataset):
     def __init__(self,path, cuda=False):
         self.df = pd.read_csv(path)
@@ -53,7 +51,6 @@ def train(dataset, net, train_frac, lr, batch_size, epochs):
     # setup
     train_size = round(train_frac * len(dataset))
     test_size = len(dataset) - train_size
-    print(train_size, test_size)
     train_data, test_data = random_split(dataset,[train_size, test_size])
 
     train_loader = DataLoader(train_data, batch_size=batch_size,shuffle=True, num_workers=0)
@@ -102,17 +99,17 @@ def main(args):
 
     dataset = ProtDataset(args.data, args.cuda)
     # loop thru train fracs
-    epochs = 5
+    epochs, lr, batch_size = 5, 0.01, 16
     rs,ps, fracs = [], [], []
     for train_frac in np.linspace(0.01, 0.99,50):
         if args.cuda:
             net = Net().cuda()
         else:
             net = Net()
-        r = train(dataset,net, train_frac, lr, batch_size, epochs)
-        rs.append(r), ps.append(p), fracs.append(train_frac)
+        r = train(dataset,net, float(train_frac), lr, batch_size, epochs)
+        rs.append(r), fracs.append(train_frac)
 
-    df = pd.DataFrame([fracs,rs,ps], index = ['train_frac','R','P']).T
+    df = pd.DataFrame([fracs,rs], index = ['train_frac','R']).T
     df.to_csv('scores.csv')
     plot_(df)
     print(df)
