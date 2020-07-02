@@ -100,38 +100,22 @@ def plot_(df):
 
 def main(args):
 
-    def trial(lr, batch_size, epochs):
-        dataset = ProtDataset(args.data, args.cuda)
-        if cuda:
+    dataset = ProtDataset(args.data, args.cuda)
+    # loop thru train fracs
+    epochs = 5
+    rs,ps, fracs = [], [], []
+    for train_frac in np.linspace(0.01, 0.99,50):
+        if args.cuda:
             net = Net().cuda()
         else:
             net = Net()
-        batch_size, epochs = round(batch_size), round(epochs)
         r = train(dataset,net, train_frac, lr, batch_size, epochs)
-        return r
-
-    '''
-    # hyper params
-    best_parameters, values, experiment, model = optimize(
-    parameters=[
-        {"name": "lr", "type": "range", "bounds": [1e-6, 0.4], "log_scale": True},
-        {"name": "batch_size", "type": "range", "bounds": [1, 64]},
-        {"name": "epochs", "type": "range", "bounds": [1, 64]}],
-    evaluation_function=trial,
-    objective_name='accuracy')'''
-
-
-    '''# loop thru train fracs
-    epochs = 5
-    rs,ps, fracs = [], [], []
-    train_frac = 0.2
-    r = train(dataset,net, train_frac, lr, batch_size, epochs)
-    rs.append(r), ps.append(p), fracs.append(train_frac)
+        rs.append(r), ps.append(p), fracs.append(train_frac)
 
     df = pd.DataFrame([fracs,rs,ps], index = ['train_frac','R','P']).T
     df.to_csv('scores.csv')
     plot_(df)
-    print(df)'''
+    print(df)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
